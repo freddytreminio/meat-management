@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "meat-management-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-23",
+  "workers_dev": false,
+  "send_metrics": false,
+}

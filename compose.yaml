@@ -1,0 +1,109 @@
+name: meat-management
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: infra/docker/Dockerfile.dev
+  init: true
+
+services:
+  adminer:
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - '127.0.0.1:8080:8080'
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-meat_local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-meat_local_dev_only}
+      POSTGRES_DB: ${POSTGRES_DB:-meat_management}
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    <<: *app
+    command: sh -c "pnpm db:migrate && pnpm --filter @meat/api bootstrap"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-meat_local}:${POSTGRES_PASSWORD:-meat_local_dev_only}@db:5432/${POSTGRES_DB:-meat_management}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@meat.local}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?Ejecuta node scripts/setup-local.mjs primero}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *app
+    command: pnpm --filter @meat/api dev
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-meat_local}:${POSTGRES_PASSWORD:-meat_local_dev_only}@db:5432/${POSTGRES_DB:-meat_management}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Ejecuta node scripts/setup-local.mjs primero}
+      AUTH_ORIGIN: ${AUTH_ORIGIN:-http://localhost:5173}
+    ports:
+      - '127.0.0.1:8787:8787'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:8787/health/db').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 30s
+    develop:
+      watch:
+        - action: sync
+          path: apps/api/src
+          target: /workspace/apps/api/src
+        - action: sync
+          path: packages/db/src
+          target: /workspace/packages/db/src
+
+  web:
+    <<: *app
+    command: pnpm --filter @meat/web dev
+    environment:
+      API_PROXY_TARGET: http://api:8787
+    ports:
+      - '127.0.0.1:5173:5173'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:5173').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    develop:
+      watch:
+        - action: sync
+          path: apps/web/src
+          target: /workspace/apps/web/src
+
+volumes:
+  postgres_data:
