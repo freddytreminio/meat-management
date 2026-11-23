@@ -10,11 +10,12 @@
     "setup:local": "node scripts/setup-local.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm -r typecheck && tsc -p tsconfig.pages.json",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "verify:local": "node scripts/verify-local.mjs",
     "build": "pnpm -r build",
+    "check:deploy": "pnpm --filter @meat/api exec wrangler deploy --env production --dry-run --outdir dist/production && pnpm --filter @meat/api exec wrangler pages functions build ../../functions --outdir dist/pages-functions --project-directory ../..",
     "db:generate": "pnpm --filter @meat/db generate",
     "db:migrate": "pnpm --filter @meat/db migrate"
   },

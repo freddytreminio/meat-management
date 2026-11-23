@@ -195,9 +195,18 @@ conexión nueva. Estos endpoints de diagnóstico son públicos solo en el entorn
 
 ## Alcance y decisiones
 
+La preparación de producción está en [Publicar el piloto](gestion/despliegue-piloto.md).
+`pnpm check:deploy` valida el bundle de producción y Pages Functions sin publicar.
+La configuración raíz `wrangler.jsonc` corresponde a Pages; la del paquete API
+contiene un entorno `production` separado. El proxy `/api/*` mantiene las cookies
+en el dominio de Pages mediante un Service binding. Los previews no acceden al
+Worker de producción. Los pasos cloud se ejecutan manualmente por el usuario.
+
 Ver [arquitectura local](docs/architecture/local.md) e
 [informe de verificación](docs/PHASE_1_REPORT.md).
 La Fase 2 incorpora Better Auth, React Router, TanStack Query, React Hook Form,
 Zod y Lucide. Se conserva el CSS propio existente. No se implementaron módulos
-comerciales ni se configuraron servicios cloud, repositorio remoto o despliegues.
-CI/CD y conexiones reales a Neon/Cloudflare quedan para Fase 3.
+comerciales. El usuario publicó el repositorio en GitHub y React en Cloudflare
+Pages y confirmó migraciones y administrador en Neon. El despliegue de la API y
+la verificación completa del piloto siguen pendientes. CI/CD de API y recuperación
+de datos también quedan pendientes de Fase 3.

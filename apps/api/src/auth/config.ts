@@ -4,20 +4,21 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { auditLog, user, type Database } from '@meat/db';
 import * as schema from '@meat/db';
 import { eq } from 'drizzle-orm';
+import { authOrigins, type OriginConfig } from './origins';
 
-export type AuthConfig = { BETTER_AUTH_SECRET?: string; AUTH_ORIGIN?: string };
+export type AuthConfig = { BETTER_AUTH_SECRET?: string } & OriginConfig;
 
 export function createAuth(db: Database, config: AuthConfig) {
   if (!config.BETTER_AUTH_SECRET || config.BETTER_AUTH_SECRET.length < 32)
     throw new Error('Authentication secret is missing');
-  const origin = config.AUTH_ORIGIN ?? 'http://localhost:5173';
+  const { origin, trusted } = authOrigins(config);
   return betterAuth({
     appName: 'Meat Management',
     baseURL: origin,
     basePath: '/api/auth',
     secret: config.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, { provider: 'pg', schema, transaction: true }),
-    trustedOrigins: [origin, 'http://127.0.0.1:5173'],
+    trustedOrigins: trusted,
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,

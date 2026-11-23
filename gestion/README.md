@@ -12,6 +12,7 @@ En VS Code puedes usar **Ctrl + Shift + V** para ver una nota Markdown con forma
 4. Usa [Pasos de trabajo y mantenimiento](pasos-a-seguir.md) para trabajar a diario.
 5. Si algo falla, revisa [Solución de errores](solucion-de-errores.md).
 6. Sigue [Uso de la administración](fase-2.md) para iniciar sesión y gestionar usuarios.
+7. Sigue [Publicar el piloto](despliegue-piloto.md) para publicar manualmente la API y conectar Pages con Neon.
 
 ## Accesos rápidos
 

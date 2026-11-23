@@ -4,6 +4,7 @@ import { HTTPException } from 'hono/http-exception';
 import { secureHeaders } from 'hono/secure-headers';
 import { bodyLimit } from 'hono/body-limit';
 import { createAuth } from './auth/config';
+import { authOrigins } from './auth/origins';
 import { administration } from './modules/administration/routes';
 import { permissions } from './auth/permissions';
 import type { ApiEnv } from './types';
@@ -17,10 +18,7 @@ export function createApp(probe: Probe = probeDatabase) {
     c.header('Cache-Control', 'no-store');
     if (!['GET', 'HEAD', 'OPTIONS'].includes(c.req.method)) {
       const origin = c.req.header('origin');
-      const allowed = [
-        c.env.AUTH_ORIGIN ?? 'http://localhost:5173',
-        'http://127.0.0.1:5173',
-      ];
+      const allowed = authOrigins(c.env).trusted;
       if (!origin || !allowed.includes(origin))
         return c.json({ error: 'Origen de la solicitud no permitido.' }, 403);
     }

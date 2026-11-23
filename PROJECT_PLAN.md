@@ -461,14 +461,20 @@ La primera fase se aceptará solamente cuando:
 
 ## 13. Próxima acción
 
-**Revisar la administración local de Fase 2 y preparar la Fase 3 cuando sea autorizada.**
+**Continuar el despliegue manual del piloto de Fase 3.**
 
 El usuario autorizó la Fase 2 después de verificar la infraestructura local.
 Las instrucciones de acceso y uso están en `gestion/fase-2.md`; las credenciales
 locales se conservan en archivos privados ignorados por Git.
 
-No conectar ni migrar Neon, configurar recursos Cloudflare, desplegar, crear
-commits o publicar repositorios sin autorización. Los módulos comerciales siguen
+El usuario publicó main en GitHub y el frontend en Pages, y confirmó las migraciones
+y creación del administrador en Neon desde su terminal. La configuración local de
+API y Pages Functions está preparada; falta publicar el Worker, guardar secretos,
+subir los cambios de integración y comprobar el piloto completo. Instrucciones:
+`gestion/despliegue-piloto.md`.
+
+El agente no realizará cambios cloud, commits, push ni despliegues por su cuenta;
+el usuario desea ejecutar los comandos personalmente. Los módulos comerciales siguen
 pendientes de requisitos aprobados por el cliente.
 
 ---
